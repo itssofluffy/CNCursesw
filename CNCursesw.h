@@ -29,4 +29,5 @@
 #include <locale.h>
 
 #include <ncurses.h>
+#include <panel.h>
 #endif
