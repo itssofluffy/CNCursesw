@@ -38,6 +38,8 @@ rc=$?
 [[ $rc -ne 0 ]] && exit $rc
 
 apt-get -y install wget \
+                   pkg-config \
+                   grep \
                    build-essential
 rc=$?
 
@@ -101,5 +103,39 @@ ldconfig
 rc=$?
 
 [[ $rc -ne 0 ]] && exit $rc
+
+package="${package}w"
+
+prefix="$(pkg-config --variable=prefix \
+                     "$package")"
+
+pc_file="$(find "$prefix" \
+                -name "$package.pc" \
+                -print | \
+           grep --invert-match \
+                "/usr/local/src" | \
+           head --lines=1)"
+
+if [[ -f "$pc_file" ]] ; then
+    pc_dir="$(dirname "$pc_file")"
+
+    swift_pc_file="$pc_dir/${package}-swift.pc"
+
+    awk -F: '{
+        if ($1 == "Description") {
+            printf("%s add-on for CNCursesw swift module\n", $0)
+        } else if ($1 == "Libs") {
+            printf("%s%s -lpanelw %s\n", $1, FS, $2)
+        } else if ($1 == "Cflags") {
+            printf("%s%s\n", $1, FS)
+        } else {
+            printf("%s\n", $0)
+        }
+    }' "$pc_file" 1>"$swift_pc_file" \
+                  2>/dev/null
+    rc=$?
+
+    [[ $rc -ne 0 ]] && exit $rc
+fi
 
 exit 0

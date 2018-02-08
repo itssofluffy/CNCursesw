@@ -28,7 +28,7 @@ import PackageDescription
 #if os(Linux)
 let package = Package(
     name: "CNCursesw",
-    pkgConfig: "ncursesw"
+    pkgConfig: "ncursesw-swift"
 )
 #else
 fatalError("Unsupported OS")
